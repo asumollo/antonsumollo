@@ -1,0 +1,351 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Layout: one calm reading column, a graph-paper band behind the hero,
+   a floating dock at the bottom. Colors are tokens so both themes stay in sync. */
+:root {
+  --paper: #f6f7f5;
+  --surface: #ffffff;
+  --ink: #14171c;
+  --muted: #5b6270;
+  --line: #e1e4df;
+  --grid: #e7eae5;
+  --accent: #2d5be3;
+  --accent-ink: #ffffff;
+  --mark: #dbe4ff;
+  --ok: #1d8455;
+  --gh-0: #ebeee9;
+  --gh-1: #b9e3c6;
+  --gh-2: #6fc08c;
+  --gh-3: #2f9a5d;
+  --gh-4: #1a6b3e;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --paper: #101216;
+  --surface: #171a20;
+  --ink: #e8eaee;
+  --muted: #9aa2ae;
+  --line: #272b33;
+  --grid: #1b1e24;
+  --accent: #7d9bff;
+  --accent-ink: #0d1016;
+  --mark: rgba(125, 155, 255, 0.24);
+  --ok: #45c085;
+  --gh-0: #1f232a;
+  --gh-1: #0e4429;
+  --gh-2: #006d32;
+  --gh-3: #26a641;
+  --gh-4: #39d353;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-mark: var(--mark);
+  --color-ok: var(--ok);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-hand: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 24px;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* The highlighted phrase in the bio */
+mark {
+  background: linear-gradient(transparent 12%, var(--mark) 12%, var(--mark) 92%, transparent 92%);
+  color: inherit;
+  padding: 0 0.15em;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Graph paper behind the hero, fading out as it goes down */
+.graph-paper {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 460px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: center top;
+  mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 100%);
+}
+
+/* Typewriter caret */
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.95em;
+  margin-left: 3px;
+  vertical-align: -0.1em;
+  background: var(--accent);
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Rocker light switch */
+.rocker {
+  transition: transform 0.25s cubic-bezier(0.3, 1.4, 0.5, 1);
+  transform-origin: 50% 50%;
+}
+
+/* Project cover when there's no image. Mixed from the accent so it works in both themes. */
+.cover-placeholder {
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, var(--accent) 26%, transparent), transparent 60%),
+    linear-gradient(color-mix(in oklab, var(--accent) 9%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, color-mix(in oklab, var(--accent) 9%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    color-mix(in oklab, var(--accent) 10%, var(--surface));
+}
+.cover-placeholder-title {
+  color: color-mix(in oklab, var(--accent) 38%, var(--surface));
+}
+
+/* Home page project deck. Every card shares one grid cell, so the deck is as tall as its tallest
+   card; --o (offset from the middle) drives the spread and tilt. Fanning only happens on devices
+   that can hover; touch screens keep the resting fan and a tap opens the card. */
+.project-deck {
+  --w: 36%;
+  --rest: 22%;
+  --fan: 88%;
+  --tilt: 6deg;
+  display: grid;
+  padding-block: 20px 8px;
+}
+.project-deck-card {
+  grid-area: 1 / 1;
+  justify-self: center;
+  width: var(--w);
+  z-index: var(--z);
+  transform-origin: 50% 120%;
+  transform: translateX(calc(var(--o) * var(--rest))) rotate(calc(var(--o) * var(--tilt)));
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+}
+.project-deck-card > article {
+  height: 100%;
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.5);
+}
+@media (hover: hover) {
+  .project-deck:hover .project-deck-card,
+  .project-deck:focus-within .project-deck-card {
+    transform: translateX(calc(var(--o) * var(--fan))) rotate(calc(var(--o) * 1.5deg))
+      translateY(calc(var(--o) * var(--o) * 8px));
+  }
+  .project-deck .project-deck-card:hover,
+  .project-deck .project-deck-card:focus-within {
+    z-index: 9;
+    transform: translateX(calc(var(--o) * var(--fan))) translateY(-14px) scale(1.03);
+  }
+  .project-deck:has(.project-deck-card:hover) .project-deck-card:not(:hover) {
+    opacity: 0.7;
+  }
+}
+@media (max-width: 639px) {
+  .project-deck {
+    --w: 62%;
+    --rest: 14%;
+    --tilt: 5deg;
+  }
+}
+
+/* Long-form project write-ups */
+.prose {
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--ink);
+}
+.prose > * + * {
+  margin-top: 1.1em;
+}
+.prose h2 {
+  font-size: 1.35rem;
+  font-weight: 750;
+  line-height: 1.3;
+  margin-top: 2em;
+}
+.prose h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 1.6em;
+}
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.3em;
+}
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li + li {
+  margin-top: 0.35em;
+}
+.prose li::marker {
+  color: var(--muted);
+}
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.1em 0.35em;
+}
+.prose pre {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.prose pre code {
+  border: 0;
+  padding: 0;
+  background: none;
+}
+.prose img {
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.prose blockquote {
+  border-left: 3px solid var(--line);
+  padding-left: 1em;
+  color: var(--muted);
+}
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Contribution graph cells */
+.gh-0 { fill: var(--gh-0); }
+.gh-1 { fill: var(--gh-1); }
+.gh-2 { fill: var(--gh-2); }
+.gh-3 { fill: var(--gh-3); }
+.gh-4 { fill: var(--gh-4); }
+
+/* A new face in the dock's viewer count pops in. */
+@keyframes face-in {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Dock "Ask about me": a 1px light that travels around the pill. The spinning conic sits behind a
+   pill that's 1px smaller, so only its edge shows. Still for reduced motion. */
+.ask-ring {
+  position: relative;
+  display: inline-flex;
+  padding: 1px;
+  border-radius: 9999px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.ask-ring::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -50%;
+  top: -200%;
+  width: 200%;
+  height: 500%;
+  background: conic-gradient(
+    from 0deg,
+    var(--accent),
+    transparent 25%,
+    transparent 60%,
+    var(--ok) 85%,
+    var(--accent)
+  );
+  animation: ask-spin 4s linear infinite;
+}
+@keyframes ask-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ask-ring::before { animation: none; }
+}
+
+/* The Ask terminal drawer slides up from the bottom edge when it opens. */
+.ask-drawer {
+  animation: drawer-up 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes drawer-up {
+  from { transform: translateY(100%); }
+}
+
+/* An answer's tool steps fold away once it's done. A one-row grid animates between 0fr and 1fr,
+   so the height follows the content; minmax(0, 1fr) keeps long lines truncating, not widening. */
+.ask-fold {
+  display: grid;
+  grid-template-rows: 0fr;
+  grid-template-columns: minmax(0, 1fr);
+  transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ask-fold.open {
+  grid-template-rows: 1fr;
+}
+.ask-fold > * {
+  overflow: hidden;
+  min-height: 0;
+}
